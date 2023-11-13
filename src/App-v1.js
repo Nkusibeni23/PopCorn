@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 const tempMovieData = [
   {
@@ -50,56 +50,24 @@ const tempWatchedData = [
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
-const KEY = "f84fc31d";
-
 export default function App() {
-  const [movies, setMovies] = useState([]);
-  const [query, setQuery] = useState("interstellar");
-
-  useEffect(() => {
-    async function fetchMovies() {
-      try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/search/movie?api_key=${KEY}&query=${query}`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          console.log(data); // Add this line to see the response data
-          if (data.Search) {
-            setMovies(data.Search);
-          } else {
-            console.error("No results found.");
-          }
-        } else {
-          console.error("Error fetching data:", res.status, res.statusText);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    }
-    fetchMovies();
-  }, [query]);
-
-  console.log(KEY); // Check if the API key is correct
-  console.log(
-    `https://api.themoviedb.org/3/search/movie?api_key=${KEY}&query=${query}`
-  );
-
+  const [movies, setMovies] = useState(tempMovieData);
+  const [watched, setWatched] = useState(tempWatchedData);
   return (
     <>
-      <NavBar>
-        <Search query={query} setQuery={setQuery} />
+      <NavBar movies={movies}>
+        <Search />
         <NumResult movies={movies} />
       </NavBar>
       <Main>
         <Box>
           <MovieList movies={movies} />
         </Box>
-        <WatchedBox watched={tempWatchedData} />
-        {/* <Box>
+        {/* <WatchedBox watched={tempWatchedData} /> */}
+        <Box>
           <WatchedSummary watched={watched} />
           <WatchedMovieList watched={watched} />
-        </Box> */}
+        </Box>
       </Main>
     </>
   );
@@ -121,37 +89,15 @@ function Logo() {
     </div>
   );
 }
-function Search({ query, setQuery }) {
-  const inputEl = useRef(null);
-
-  useEffect(() => {
-    function callback(e) {
-      if (document.activeElement === inputEl.current) return;
-
-      if (e.code === "Enter") {
-        inputEl.current.focus();
-        setQuery("");
-      }
-    }
-    document.addEventListener("keydown", callback);
-    return () => {
-      document.removeEventListener("keydown", callback);
-    }; //cleanup when unmounting
-  }, []);
-
-  // useEffect(function () {
-  //   const el = document.querySelector(".search");
-  //   console.log(el);
-  //   el.focus();
-  // }, []);
+function Search() {
+  const [query, setQuery] = useState("");
   return (
     <input
       className="search"
       type="text"
       placeholder="Search movies..."
       value={query}
-      onChange={(e) => setQuery(e.target.value)} // Update the query state using setQuery
-      ref={inputEl}
+      onChange={(e) => setQuery(e.target.value)}
     />
   );
 }
@@ -181,36 +127,34 @@ function Box({ children }) {
   );
 }
 
-function WatchedBox({ watched }) {
-  const [isOpen2, setIsOpen2] = useState(true);
-  return (
-    <div className="box">
-      <button
-        className="btn-toggle"
-        onClick={() => setIsOpen2((open) => !open)}
-      >
-        {isOpen2 ? "–" : "+"}
-      </button>
+// function WatchedBox({ watched }) {
+//   const [isOpen2, setIsOpen2] = useState(true);
+//   return (
+//     <div className="box">
+//       <button
+//         className="btn-toggle"
+//         onClick={() => setIsOpen2((open) => !open)}
+//       >
+//         {isOpen2 ? "–" : "+"}
+//       </button>
 
-      {isOpen2 && (
-        <>
-          <WatchedSummary watched={watched} />
-          <WatchedMovieList watched={watched} />
-        </>
-      )}
-    </div>
-  );
-}
+//       {isOpen2 && (
+//         <>
+
+//    <WatchedSummary watched={watched}/>
+//    <WatchedMovieList watched={watched} />
+
+//         </>
+//       )}
+//     </div>
+//   );
+// }
 
 function MovieList({ movies }) {
-  if (movies.length === 0) {
-    return <p>Loading movies...</p>; // You can display a loading message
-  }
-
   return (
     <ul className="list">
       {movies?.map((movie) => (
-        <Movie movie={movie} key={movie.imdbID} />
+        <Movie movie={movie} />
       ))}
     </ul>
   );
